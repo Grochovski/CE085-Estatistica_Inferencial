@@ -1,0 +1,129 @@
+---
+title: "aaaa"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+### Introdução
+
+Este trabalho tem por objetivo demonstrar a estimação dos parâmetros de uma regressão gaussiana com censura intervalar. O parâmetros de uma distribuição normal são $\mu$ e $\sigma^2$ que são, respectivamente a média e a variância dos dados. Essa estimação será feita por meio do método de máxima verossimilhança, que inclui a verossimilhança, log-verossimilhança e função escore.  Também será mostrado a utilidade deste modelo de forma prática. Também está relatado no presente trabalho a estimação numérica utilizando a linguagem R com funções próprias de pacotes básicos e com a ajuda de funções específicas para a maximização de métodos numéricos.
+
+### Modelo
+
+O modelo utilizado no presente trabalho é a regressão gaussiana com censura intervalar. Aplicando o modelo de regressão linear simples à inferencia estatística, temos que definir a obtenção de uma amostra aleatória, que constituirá a base para a estimação do modelo e, após verificação da adequação do modelo, fazer inferências para a população geral. 
+
+Pode-se considerar duas maneiras para obtenção de uma amostra: valores de $X$ prefixados e para estes valores obtenção de observações independentes de $Y$, ou, obtenção de uma amostra de $(X,Y)$, bivariada. Em ambos os casos, temos uma amostra de tamanho n, sendo $x_1, x_2,...,x_n$ os valores prefixados de $X$, ou os valores observados de X, e $y_1,y_2,...,y_n$ os correspondentes valores observados de $Y$. 
+
+Resumindo o modelo de regressão linear simples amostra temos que
+
+$$y_i = \beta_0 + \beta_1x_i + \epsilon_i$$
+$$\beta_0,\beta_1, \textrm{ e } x_i: \textrm{ constantes}$$
+Ou seja, a amostra aleatória será na forma
+
+$$y_1 = \beta_o + \beta_1x_1 + \epsilon_1 $$
+$$y_2 = \beta_o + \beta_1x_2 + \epsilon_2 $$
+$$\vdots$$
+$$y_n = \beta_o + \beta_nx_1 + \epsilon_n $$
+Expressando este modelo usando notação matricial. Sejam os vetores:
+
+$$\boldsymbol{y} = \begin{bmatrix} 
+y_1 \\
+y_1 \\
+\vdots \\
+y_n \\
+\end{bmatrix} , \boldsymbol{\epsilon} = \begin{bmatrix} 
+\epsilon_1 \\
+\epsilon_2 \\
+\vdots \\
+\epsilon_n \\
+\end{bmatrix} , \boldsymbol{\beta} = \begin{bmatrix} 
+\beta_0 \\
+\beta_1 \\
+\end{bmatrix} $$
+
+E seja a matrix $\boldsymbol{X}$:
+
+$$\boldsymbol{X} = \begin{bmatrix}
+1 & x_1\\ 
+ 1& x_2\\ 
+\vdots & \vdots\\  
+1 & x_n\\ 
+\end{bmatrix}$$
+
+denominada matriz de modelo. Note que o número de colunas de $X$ é igual ao número de elementos de $\beta$ e o número de linhas de $X$ é o tamanho da amostra. A primeira de $X$ é um vetor com os valores que multiplicam $\beta_0$, portanto, um vetor com elementos iguais a 1. A segunda coluna de $X$ é um vetor com os valores que multiplicam $\beta_1$, portanto os valores $x_1,x_2,...,x_n$.
+
+Então,
+
+$$ \boldsymbol{X\beta + \epsilon} = \begin{bmatrix}
+1 & x_1\\ 
+ 1& x_2\\ 
+\vdots & \vdots\\  
+1 & x_n\\ 
+\end{bmatrix} \begin{bmatrix} 
+\beta_0 \\
+\beta_1 \\
+\end{bmatrix} +  \begin{bmatrix} 
+\epsilon_1 \\
+\epsilon_2 \\
+\vdots\\
+\epsilon_n \\
+\end{bmatrix} = \begin{bmatrix} 
+\beta_0 + \beta_1x_1 +\epsilon_1 \\
+\beta_0 + \beta_1x_2 +\epsilon_2 \\
+\vdots \\
+\beta_0 + \beta_1x_n +\epsilon_n \\
+\end{bmatrix} =
+\begin{bmatrix} 
+y_1 \\
+y_1 \\
+\vdots \\
+y_n \\
+\end{bmatrix} = \boldsymbol{y} $$
+
+Relembrando que a distribuição Normal $N(\mu,\sigma^2)$ possui função é escrita 
+
+$$f(y_i)=\frac{1}{\sqrt{2\pi\sigma^2}}\exp\left\{-\frac{1}{2\sigma^2}\left[y_i-\mu\right]^2\right\}$$
+
+Porém, a amostra possui valores intervalares no formato
+
+$$a_i < y_i <b_i, \text{ sendo }i = 1,...,n$$
+
+Logo, a distribuição normal com censura intervalar será
+
+$$f(y_i)= \int_{y_{\min}}^{y_{\max}} \frac{1}{\sqrt{2\pi\sigma^2}}\exp\left\{-\frac{1}{2\sigma^2}\left[y_i-\mu\right]^2\right\}$$
+
+Consequentemente,
+$$y_i \text{ ~ } N(\beta_o,\beta_1,\sigma^2), i = 1,...,n \text{   independentes.}$$
+Ou seja, a densidade de $y_i$ é dada por
+
+$$\frac{1}{\sqrt{2\pi \sigma^2}}\exp\left\{-\frac{1}{2\sigma^2}\left[y_i-\left(\beta_0+\beta_1x_i\right)\right]^2\right\}$$
+
+### Verossimilhança
+
+Na função de verossimilhança os dados são medidos em algum intervalo definido pela precisão da medição. Em diversos casos, esse intervalo é pequeno em relação a variação dos dados e portanto
+os valores dos dados são tratados como pontos na cálculo da função de
+verossimilhança. Porém, como o modelo é regressão gaussiana com censura intervalar, isso significa que os intervalos precisam ser considerados.
+
+Para isso, será necessário usar a função verossimilhança
+
+$$L(\theta) = \prod_{i=1}^n P_\theta[y_i-\delta/2 \leq Y_i \leq y_i + \delta/2]$$
+$$L(\theta) = \prod_{i=1}^n \int_{y_i - \delta/2}^{y_1 + \delta/2} f(y_i,\theta)d(y_i)$$
+
+
+A função de verossimilhança é igual a densidade conjunta, contudo, considerando-se $y_1,y_2,...,y_n$ fixos e os parâmetros $\beta_0$, $\beta_1$ e $\sigma^2$ como argumentos da função; notação: $L(\beta_o,\beta_1,\sigma^2)$,
+
+$$L(\beta_0,\beta_1,\sigma^2) = \prod_{i=1}^n  \int_{y_{\min}}^{y_{\max}} \frac{1}{\sqrt{2\pi \sigma^2}}\exp\left\{-\frac{1}{2\sigma^2}\left[y_i-\left(\beta_0+\beta_1x_i\right)\right]^2\right\} $$
+$$ = \int_{y_{\min}}^{y_{\max}} \frac{1}{\left(\sqrt{2\pi\sigma^2}\right)^n}\exp\left\{-\frac{1}{2\sigma^2}\sum_{i=1}^n\left[y_i-\left(\beta_0+\beta_1x_i\right)\right]^2\right\} $$
+Para definir estimadores de máxima verossimilhança, consideramos $\beta_0$, $\beta_0$ e $\sigma^2$ como variáveis matemáticas (para usar a mesma notação) e devemos achar os valores que maximizam $L(\beta_0,\beta_1,\sigma^2)$, onde $\beta_0 \in \mathbb{R}$, $\beta_1 \in \mathbb{R}$ e $\sigma^2 > 0$.
+
+Lembrando que a função exponencial é monótona crescente, e notando que $-\frac{1}{2\sigma^2}\sum_{i=1}^n\left[y_i-\left(\beta_0+\beta_1x_i\right)\right]^2 \le 0$, máximo de $L(\beta_0,\beta_1,\sigma^2)$ é obtido para os valores de $\beta_0$ e $\beta_1$ que minimizam $\sum_{i=1}^n\left[y_i-\left(\beta_0+\beta_1x_i\right)\right]^2 \le 0$, seja qual for o valor de $\sigma^2$. Portanto os estimadores de máxima verossimilhança dos parâmetros $\beta_0$ e $\beta_1$ coicidem com os estimadores de quadrados mínimos, $\widehat{\beta_0}$ e $\widehat{\beta_1}$.
+
+O valor de $\sigma^2$ que maximiza $L(\beta_0,\beta_1,\sigma^2)$ é o mesmo valor que maximiza $l(\beta_0,\beta_1,\sigma^2)=lnL(\beta_0,\beta_1,\sigma^2)$, $$l(\beta_0,\beta_1,\sigma^2)=ln(2\pi)^{-\frac{n}{2}}+ln(\sigma^2)^{-\frac{n}{2}}-\frac{1}{2\sigma^2}\sum_{i=1}^n[y_i-(\beta_0+\beta_1x_i)]^2$$ 
+Assim, $$\frac{\partial l(\widehat{\beta_0},\widehat{\beta_1},\sigma^2)}{\partial\sigma^2}=-\frac{n}{2\sigma^2}-\frac{\sum_{i=1}^n[y_i-(\widehat{\beta_0}+\widehat{\beta_1}x_i)]^2}{2}\frac{-1}{\sigma^4}$$
+Igulando a zero, $$-\frac{n}{2\sigma^2}-\frac{\sum_{i=1}^n[y_i-(\widehat{\beta_0}+\widehat{\beta_1}x_i)]^2}{2(\sigma^2)^2}=0\Rightarrow\widehat{\sigma^2}=\frac{\sum_{i=1}^n[y_i-(\widehat{\beta_0}+\widehat{\beta_1}x_i)]^2}{n}$$,
+
+que difere do estimador de quadrados mínimos apenas no demoninador: n ao invés de (n-2).
+
+
+
