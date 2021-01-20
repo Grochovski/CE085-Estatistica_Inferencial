@@ -1,3 +1,3 @@
 # CE085-Estatistica_Inferencial
 
-All Codes used in inference classes
+All Codes used in inference classes 2018
